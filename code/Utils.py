@@ -176,6 +176,7 @@ class Utils:
         while i < len(express)-1:
 
             if express[i] == 'SELECT':
+                colunas_vistas = set()
                 i+=1
                 if express[i+1] == '.':
                     composto = True                   
@@ -184,6 +185,10 @@ class Utils:
                         raise ValueError('Após o Select, deve ser digitado um nome válido de uma coluna')
                     if express[i] != ',':
                         if composto:
+                            nome_col = f"{express[i]}.{express[i+2]}"
+                            if nome_col in colunas_vistas:
+                                raise ValueError(f"Coluna repetida no SELECT: {nome_col}")
+                            colunas_vistas.add(nome_col)
                             if self.existePalavraDepois(express,express[i],idx_from):
                                 if self.verificaTabela(express[i]):
                                     i+=1
@@ -199,6 +204,10 @@ class Utils:
                             else:
                                 raise ValueError(f"Tabela não declarada na expressão: {express[i]}")
                         else:
+                            nome_col = express[i]
+                            if nome_col in colunas_vistas:
+                                raise ValueError(f"Coluna repetida no SELECT: {nome_col}")
+                            colunas_vistas.add(nome_col)
                             if self.verificaColuna(express[idx_from+1], express[i]):
                                 i+=1
                             else:
