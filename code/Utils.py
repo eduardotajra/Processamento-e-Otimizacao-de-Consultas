@@ -450,8 +450,54 @@ class Utils:
 
     @staticmethod
     def converteAlgebra(express):
-        # Transforma em algebra relacional
+        algb = ''
+        i = 0
+        if express[i] == 'SELECT':
+            idx = express.index("FROM")
+            antes = express[:idx]
+            resultado = "".join(antes)
+            algb += f'π({resultado})'
+            i = idx
+        if express[i] == 'FROM':
+            i+=1
+            tab = express[i]
+            algb += f'('
+            if i < len(express):
+                i+=1
+                if express[i] == 'JOIN':
+                
+                if express[i] == 'WHERE':
+            else:
+                algb += f'{tab})'
+                
+                
+            
+            
+        return algb
+    
+    def verficaJoin(express, i, comp = ''):
+        if Utils.verificaTabela(express[i-1]):
+            aux += f'{express[i-1]} X {express[i+1]}'
+            i+=3
+            comp = f'Sigma({''.join(express[i:i+8])})'
+            comp = comp+f'({aux})'
+            i+=8
+            if i < len(express):
+                if express[i] == 'JOIN':
+                    Utils.verificaJoin(express, i, comp)
+                if express[i] == 'WHERE':
+                    Utils.verificaWhere()
+        else:
+            
+        
+        
+        
         return
+        
+    def verificaWhere(express, algb, i):
+        
+        return
+        
     
     def verificaColuna(self,tabela,coluna):
         if coluna == '*':

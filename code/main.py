@@ -76,7 +76,9 @@ consulta = input("Escreva sua consulta: ")
 print("\n\n",Utils.sqlParser(consulta),"\n\n")
 
 try:
-    utils.validaConsulta(utils.sqlParser(consulta))
+    express = utils.sqlParser(consulta)
+    utils.validaConsulta(express)
+    utils.converteAlgebra(express)
     # os.system('cls' if os.name == 'nt' else 'clear')
     print("===============================")
     print("Consulta realizada com sucesso!")
