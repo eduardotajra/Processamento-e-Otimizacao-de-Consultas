@@ -448,31 +448,30 @@ class Utils:
             
         return True 
 
-    @staticmethod
-    def converteAlgebra(express):
+    def converteAlgebra(self,express):
         express[:] = [elem for elem in express if elem not in ('(', ')')]
         algb = ''
         i = 0
         if express[i] == 'SELECT':
             idx = express.index("FROM")
-            antes = express[:idx]
+            antes = express[1:idx]
             resultado = "".join(antes)
             algb += f'π({resultado})'
             i = idx
         if express[i] == 'FROM':
+            bp = 1
             i+=1
             tab = express[i]
             algb += f'('
             if i < len(express)-1:
                 i+=1
                 if express[i] == 'JOIN':
-                    algb += Utils.verficaJoin(express, i)
+                    algb += self.verficaJoin(express, i)
                 elif express[i] == 'WHERE':
-                    algb += Utils.verificaWhere(express,i)
-            algb += f'{tab})'
-                
-                
-            
+                    algb += self.verificaWhere(express,i)
+                algb += ')'
+            else:
+                algb += f'{tab})'
             
         return algb
     
@@ -480,54 +479,65 @@ class Utils:
         if self.verificaTabela(express[i-1]):
             aux = f'{express[i-1]} X {express[i+1]}'
             i+=3
-            comp = f'Sigma({''.join(express[i:i+8])})'
+            comp = f'Sigma({''.join(express[i:i+7])})'
             comp = f'{comp}({aux})'
-            i+=8  
+            i+=7
         else:
             aux = f'{comp} X {express[i+1]}'
             i+=3
-            comp = f'Sigma({''.join(express[i:i+8])})({aux})'
-            i+=8
+            comp = f'Sigma({''.join(express[i:i+7])})({aux})'
+            i+=7
         if i < len(express)-1:
             if express[i] == 'JOIN':
-                i, comp = self.verificaJoin(express, i, comp)
+                comp = self.verificaJoin(express, i, comp)
             elif express[i] == 'WHERE':
-                i, comp = self.verificaWhere()
-            return i, comp
+                comp = self.verificaWhere(express, i, comp)
+                return comp
         else:
-            return i, comp
+            return comp
         
     def verificaWhere(self,express, i, comp = ''):
-        if express[i] == 'WHERE':
+        if i < len(express)-1 and express[i] == 'WHERE':
             aux = 'Sigma('
-            comp = f'{Utils.verificaWhere(express,i,aux)})({comp})'
+            comp = f'{self.verificaWhere(express,i+1,aux)})({comp})'
+            return comp
         else:
-            i+=1
             if i < len(express)-1:
+                if express[i] == 'AND':
+                    comp = f'{comp} ^ '
+                    i+=1
                 if self.verificaTabela(express[i]):
                     if express[i+1] == '.':
                         i+=1
-                        aux = f'{express[i-1]+express[i]+express[i+1]+express[i+2]}'
+                        aux = f'{comp + express[i-1]+express[i]+express[i+1]+express[i+2]}'
                         i+=3
                         if self.verificaTabela(express[i]):
-                            i+=1
-                            aux = f'{aux+express[i-1]+express[i]+express[i+1]} '
+                            aux = f'{aux+express[i]+express[i+1]+express[i+2]}'
+                            i+=3
+                            return self.verificaWhere(express,i,aux)
                         else:
-                            aux = f'{aux+express[i]} '
+                            aux = f'{aux+express[i]}'
+                            i+=1
+                            return self.verificaWhere(express,i,aux)
                     else:
-                        i+=1
-                        aux = f'{express[i-1] + express[i]+ express[i+1]} '         
+                        aux = f'{express[i] + express[i+1]+ express[i+2]}'
+                        i+=3
+                        return self.verificaWhere(express,i,aux)     
                 else:
-                    i+=1
-                    aux = f'{express[i-1] + express[i]+ express[i+1]}'
                     i+=2
+                    aux = f'{comp + express[i-2] + express[i-1]+ express[i]}'
                     if i < len(express)-1:
-                        
-                        
-                
-                
-        
-        return
+                        if express[i+1] == '.':
+                            i+=2
+                            aux = f'{aux + express[i-1] + express[i]}'
+                            i+=1
+                            return self.verificaWhere(express,i,aux)
+                        else:
+                            i+=1
+                            return self.verificaWhere(express,i,aux)
+
+            else:
+                return comp   
         
     
     def verificaColuna(self,tabela,coluna):

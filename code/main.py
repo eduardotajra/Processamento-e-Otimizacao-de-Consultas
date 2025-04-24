@@ -78,11 +78,12 @@ print("\n\n",Utils.sqlParser(consulta),"\n\n")
 try:
     express = utils.sqlParser(consulta)
     utils.validaConsulta(express)
-    utils.converteAlgebra(express)
     # os.system('cls' if os.name == 'nt' else 'clear')
     print("===============================")
     print("Consulta realizada com sucesso!")
     print("===============================")
+    print("Algebra Linear:\n",utils.converteAlgebra(express))
+    
 except ValueError as erro:
     print("\n\n")
     print("Erro capturado:", erro)
