@@ -82,6 +82,7 @@ try:
     print("===============================")
     print("Consulta realizada com sucesso!")
     print("===============================")
+
     print("Algebra Linear:\n",utils.converteAlgebra(express))
     
 except ValueError as erro:
