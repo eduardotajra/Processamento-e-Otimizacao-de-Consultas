@@ -450,6 +450,7 @@ class Utils:
 
     @staticmethod
     def converteAlgebra(express):
+        express[:] = [elem for elem in express if elem not in ('(', ')')]
         algb = ''
         i = 0
         if express[i] == 'SELECT':
@@ -462,39 +463,69 @@ class Utils:
             i+=1
             tab = express[i]
             algb += f'('
-            if i < len(express):
+            if i < len(express)-1:
                 i+=1
                 if express[i] == 'JOIN':
-                
-                if express[i] == 'WHERE':
-            else:
-                algb += f'{tab})'
+                    algb += Utils.verficaJoin(express, i)
+                elif express[i] == 'WHERE':
+                    algb += Utils.verificaWhere(express,i)
+            algb += f'{tab})'
                 
                 
             
             
         return algb
     
-    def verficaJoin(express, i, comp = ''):
-        if Utils.verificaTabela(express[i-1]):
-            aux += f'{express[i-1]} X {express[i+1]}'
+    def verficaJoin(self,express, i, comp = ''):
+        if self.verificaTabela(express[i-1]):
+            aux = f'{express[i-1]} X {express[i+1]}'
             i+=3
             comp = f'Sigma({''.join(express[i:i+8])})'
-            comp = comp+f'({aux})'
-            i+=8
-            if i < len(express):
-                if express[i] == 'JOIN':
-                    Utils.verificaJoin(express, i, comp)
-                if express[i] == 'WHERE':
-                    Utils.verificaWhere()
+            comp = f'{comp}({aux})'
+            i+=8  
         else:
-            
+            aux = f'{comp} X {express[i+1]}'
+            i+=3
+            comp = f'Sigma({''.join(express[i:i+8])})({aux})'
+            i+=8
+        if i < len(express)-1:
+            if express[i] == 'JOIN':
+                i, comp = self.verificaJoin(express, i, comp)
+            elif express[i] == 'WHERE':
+                i, comp = self.verificaWhere()
+            return i, comp
+        else:
+            return i, comp
         
-        
-        
-        return
-        
-    def verificaWhere(express, algb, i):
+    def verificaWhere(self,express, i, comp = ''):
+        if express[i] == 'WHERE':
+            aux = 'Sigma('
+            comp = f'{Utils.verificaWhere(express,i,aux)})({comp})'
+        else:
+            i+=1
+            if i < len(express)-1:
+                if self.verificaTabela(express[i]):
+                    if express[i+1] == '.':
+                        i+=1
+                        aux = f'{express[i-1]+express[i]+express[i+1]+express[i+2]}'
+                        i+=3
+                        if self.verificaTabela(express[i]):
+                            i+=1
+                            aux = f'{aux+express[i-1]+express[i]+express[i+1]} '
+                        else:
+                            aux = f'{aux+express[i]} '
+                    else:
+                        i+=1
+                        aux = f'{express[i-1] + express[i]+ express[i+1]} '         
+                else:
+                    i+=1
+                    aux = f'{express[i-1] + express[i]+ express[i+1]}'
+                    i+=2
+                    if i < len(express)-1:
+                        
+                        
+                
+                
         
         return
         
