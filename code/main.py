@@ -68,12 +68,28 @@ tabelas_bd_vendas = {
     ]
 }
 
+quantidade = {
+    "Categoria": 5,
+    "Produto": 120,
+    "TipoCliente": 3,
+    "Cliente": 75,
+    "TipoEndereco": 2,
+    "Endereco": 90,
+    "Telefone": 80,
+    "Status": 4,
+    "Pedido": 200,
+    "Pedido_has_Produto": 350
+}
+
+
+
 utils = Utils(tabelas_bd_vendas)
 
 consulta = input("Escreva sua consulta: ")
 
 
 print("\n\n",Utils.sqlParser(consulta),"\n\n")
+
 
 try:
     express = utils.sqlParser(consulta)
@@ -83,7 +99,27 @@ try:
     print("Consulta realizada com sucesso!")
     print("===============================")
 
-    print("Algebra Linear:\n",utils.converteAlgebra(express))
+    algebraRelacional = utils.converteAlgebra(express)
+    print("Algebra Relacional:\n", algebraRelacional)
+
+    algebraRelacional = algebraRelacional.split(')(')
+
+    algebraFatiada = []
+
+    for expressao in algebraRelacional:
+        expressao = expressao.replace('(','').replace(')','')
+        algebraFatiada.append(expressao)
+
+        index = 0
+        for expressao in algebraFatiada:
+            if ' X ' in expressao:
+                algebraFatiada.pop(index)
+                algebraFatiada.append(expressao.split(' '))
+            index += 1
+
+        
+    utils.gerarGrafo(algebraFatiada)
+
     
 except ValueError as erro:
     print("\n\n")

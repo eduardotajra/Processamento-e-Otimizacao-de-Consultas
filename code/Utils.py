@@ -1,4 +1,6 @@
 from datetime import datetime
+import networkx as nx
+import matplotlib.pyplot as plt
 
 class Utils:
 
@@ -593,6 +595,50 @@ class Utils:
         except ValueError:
             return False
     
+    @staticmethod
+    def gerarGrafo(algebraRelacional):
+        g = nx.DiGraph()
+        
+        i = len(algebraRelacional)-1
+
+        while 0 < i:
+            if type(algebraRelacional[i]) == list:
+                print(algebraRelacional)
+                algebraRelacional[i] = [item for item in algebraRelacional[i] if item != 'X']
+                print('-----------------------')
+                print(algebraRelacional)
+                numX = 0
+
+                for j in range(len(algebraRelacional[i]) - 1, 0, -1):
+                    if numX == 0:
+                        g.add_edge(algebraRelacional[i][j], f'X{numX}')
+                        g.add_edge(algebraRelacional[i][0], f'X{numX}')
+                    else:
+                        g.add_edge(algebraRelacional[i][j], f'X{numX}')
+                        g.add_edge(f'X{numX-1}', algebraRelacional[i][j])
+                    numX += 1
+
+                g.add_edge(f'X{numX-1}', algebraRelacional[i-1])
+                i -= 1
+
+            g.add_edge(algebraRelacional[i], algebraRelacional[i-1])
+            i -= 1
+
+        nx.draw_spring(g, with_labels = True)
+        plt.show()
     
+    @staticmethod
+    def otimizaConsulta(algebra,quantidade):
+        return
 
+    def otimizaProjecao(algebra):
+        return
+    
+    def otimizaPosicao(algebra,quantidade):
+        return
+    
+    def otimizaJoin(algebra):
+        return
 
+    def otimizaSelecao(algebra):
+        return
