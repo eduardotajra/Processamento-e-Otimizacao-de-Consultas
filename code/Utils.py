@@ -1,6 +1,7 @@
 from datetime import datetime
 import networkx as nx
 import matplotlib.pyplot as plt
+import re
 
 class Utils:
 
@@ -603,19 +604,18 @@ class Utils:
 
         while 0 < i:
             if type(algebraRelacional[i]) == list:
-                print(algebraRelacional)
                 algebraRelacional[i] = [item for item in algebraRelacional[i] if item != 'X']
-                print('-----------------------')
-                print(algebraRelacional)
+                #print('-----------------------')
+                #print(algebraRelacional)
                 numX = 0
 
-                for j in range(len(algebraRelacional[i]) - 1, 0, -1):
+                for j in range(0, len(algebraRelacional[i]) - 1, 1):
                     if numX == 0:
                         g.add_edge(algebraRelacional[i][j], f'X{numX}')
-                        g.add_edge(algebraRelacional[i][0], f'X{numX}')
+                        g.add_edge(algebraRelacional[i][j+1], f'X{numX}')
                     else:
-                        g.add_edge(algebraRelacional[i][j], f'X{numX}')
-                        g.add_edge(f'X{numX-1}', algebraRelacional[i][j])
+                        g.add_edge(algebraRelacional[i][j+1], f'X{numX}')
+                        g.add_edge(f'X{numX-1}', algebraRelacional[i][j+1])
                     numX += 1
 
                 g.add_edge(f'X{numX-1}', algebraRelacional[i-1])
@@ -626,17 +626,114 @@ class Utils:
 
         nx.draw_spring(g, with_labels = True)
         plt.show()
-    
-    @staticmethod
-    def otimizaConsulta(algebra,quantidade):
-        return
 
-    def otimizaProjecao(algebra):
-        return
-    
-    def otimizaPosicao(algebra,quantidade):
-        return
-    
+    @staticmethod
+    def otimiza(algebraRelacional, tabelas):
+        tabelas = list(tabelas.keys())
+
+        print('ALGEBRA RELACIONAL: ' + str(algebraRelacional))
+
+        def cortaWhere(where):
+            if isinstance(where, list):
+                where = where[0]
+
+            campo, op, valor = re.split(r'(=|>|<)', where, maxsplit=1)
+            return f'{campo}{op}{valor}'
+        
+        if not algebraRelacional[1][0] == 'σ':
+            print(algebraRelacional)
+
+        else:
+            listaWheres = []
+            listaJoins = []
+
+            where = algebraRelacional[1].replace(' ', '')
+            if '^' in where:
+                arrayTexto = where.split('^')
+                for texto in arrayTexto:
+                    listaWheres.append(cortaWhere(texto))
+            else:
+                listaWheres.append(cortaWhere(where))
+
+            tabelaJoin = listaWheres[0][1].split('.')[0]
+
+            listaWheres = [[''.join(parte)] for parte in listaWheres]
+            
+            if (tabelaJoin in tabelas):
+                listaWheres = []
+            else:
+                del(algebraRelacional[1])
+
+            if type(algebraRelacional[len(algebraRelacional)-1]) != list:
+                superArray = []
+                superArray.append(algebraRelacional[1])
+                for where in listaWheres:
+                    superArray.append(where[0])
+                superArray.append(algebraRelacional[0])
+                print(superArray)
+                return
+            
+            ultElemento = len(algebraRelacional)-1
+
+            for i in range(ultElemento, -1, -1):
+                if algebraRelacional[i][0] == 'σ':
+                    listaJoins.append(algebraRelacional[i])
+                    del algebraRelacional[i]
+
+            ultElemento = len(algebraRelacional)-1
+
+            if type(algebraRelacional[ultElemento]) == list:
+                algebraRelacional[ultElemento] = [item for item in algebraRelacional[ultElemento] if item != 'X']
+            
+            superArray = []
+
+            superArray.append(algebraRelacional[1][0])
+            superArray.append(algebraRelacional[1][1])
+            del(algebraRelacional[1][0])
+            del(algebraRelacional[1][0])
+            
+            nomesTabelasJoins = []
+
+            for s in listaJoins:
+                primeira = s[1:].split('.', 1)[0]
+
+                segunda  = s.split('=', 1)[1].split('.', 1)[0]
+
+                nomesTabelasJoins.append([primeira, segunda])
+
+            nomesTabelasWheres = []
+
+            for s in listaWheres:
+                primeira = s[0].split('.', 1)[0]
+
+                primeira = primeira.replace('σ','')
+                nomesTabelasWheres.append(primeira)            
+
+            superArray.append(listaJoins[0])
+
+            if len(listaJoins) > 1:
+                del(listaJoins[0])
+
+            for i in range(len(algebraRelacional) - 1, -1, -1):
+                if type(algebraRelacional[i]) == list:
+                    for j in range(0, len(algebraRelacional[i])):
+                        superArray.append(algebraRelacional[i][j]) 
+                        superArray.append(listaJoins[j])
+
+            for i in range(len(superArray) - 1, -1, -1):
+                elemento = superArray[i]
+                for j in range(len(nomesTabelasWheres) - 1, -1, -1):
+                    if nomesTabelasWheres[j] == elemento:
+                        where = listaWheres.pop(j)
+                        nomesTabelasWheres.pop(j)
+                        superArray.insert(i + 1, where[0])
+
+            superArray.append(algebraRelacional[0])
+
+            print(superArray)
+
+            return
+        
     def otimizaJoin(algebra):
         return
 

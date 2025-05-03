@@ -100,7 +100,7 @@ try:
     print("===============================")
 
     algebraRelacional = utils.converteAlgebra(express)
-    print("Algebra Relacional:\n", algebraRelacional)
+    #print("Algebra Relacional:\n", algebraRelacional)
 
     algebraRelacional = algebraRelacional.split(')(')
 
@@ -118,7 +118,11 @@ try:
             index += 1
 
         
-    utils.gerarGrafo(algebraFatiada)
+    #utils.gerarGrafo(algebraFatiada)
+
+    utils.otimiza(algebraFatiada, tabelas_bd_vendas)
+
+    #utils.otimizaConsulta2(algebraFatiada)
 
     
 except ValueError as erro:
