@@ -117,13 +117,9 @@ try:
                 algebraFatiada.append(expressao.split(' '))
             index += 1
 
-        
-    #utils.gerarGrafo(algebraFatiada)
-
-    utils.otimiza(algebraFatiada, tabelas_bd_vendas)
-
-    #utils.otimizaConsulta2(algebraFatiada)
-
+    algebraOtimizada = utils.otimiza(algebraFatiada, tabelas_bd_vendas)
+    
+    utils.gerarGrafoOtimizado(algebraOtimizada, tabelas_bd_vendas)
     
 except ValueError as erro:
     print("\n\n")

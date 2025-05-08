@@ -631,8 +631,6 @@ class Utils:
     def otimiza(algebraRelacional, tabelas):
         tabelas = list(tabelas.keys())
 
-        print('ALGEBRA RELACIONAL: ' + str(algebraRelacional))
-
         def cortaWhere(where):
             if isinstance(where, list):
                 where = where[0]
@@ -641,16 +639,19 @@ class Utils:
             return f'{campo}{op}{valor}'
         
         if not algebraRelacional[1][0] == 'σ':
-            print(algebraRelacional)
+            superArray = [algebraRelacional[1], algebraRelacional[0]]
+            return superArray
 
         else:
             listaWheres = []
             listaJoins = []
-
+            
             where = algebraRelacional[1].replace(' ', '')
             if '^' in where:
                 arrayTexto = where.split('^')
                 for texto in arrayTexto:
+                    if not texto.startswith('σ'):
+                        texto = 'σ' + texto
                     listaWheres.append(cortaWhere(texto))
             else:
                 listaWheres.append(cortaWhere(where))
@@ -670,8 +671,8 @@ class Utils:
                 for where in listaWheres:
                     superArray.append(where[0])
                 superArray.append(algebraRelacional[0])
-                print(superArray)
-                return
+
+                return superArray
             
             ultElemento = len(algebraRelacional)-1
 
@@ -709,9 +710,8 @@ class Utils:
                 primeira = primeira.replace('σ','')
                 nomesTabelasWheres.append(primeira)            
 
-            superArray.append(listaJoins[0])
-
             if len(listaJoins) > 1:
+                superArray.append(listaJoins[0])
                 del(listaJoins[0])
 
             for i in range(len(algebraRelacional) - 1, -1, -1):
@@ -730,12 +730,55 @@ class Utils:
 
             superArray.append(algebraRelacional[0])
 
-            print(superArray)
+            
+            if superArray[2] in tabelas and superArray[3][0] == 'π':
+                aux = superArray[2]
+                superArray[2] = superArray[1]
+                superArray[1] = aux
 
-            return
+            return superArray
         
-    def otimizaJoin(algebra):
-        return
+    @staticmethod
+    def gerarGrafoOtimizado(algebraRelacional, tabelas):
+        print(algebraRelacional)
+        tabelas = list(tabelas.keys())
+        g = nx.DiGraph()
+        
+        listaJoins = []
+        listaWhere = []
 
-    def otimizaSelecao(algebra):
+        for dado in algebraRelacional:
+            if dado.startswith('σ'):
+                if '=' in dado and '.' in dado.split('=')[1]:
+                    listaJoins.append(dado)
+                else:
+                    listaWhere.append(dado)
+        
+        for i in range(0, len(algebraRelacional)-1, 1):
+            if algebraRelacional[i] in tabelas:
+                if algebraRelacional[i+1] not in tabelas:
+                    g.add_edge(algebraRelacional[i], algebraRelacional[i+1])
+                else:
+                    j = i
+                    while algebraRelacional[j+1] not in listaJoins and not algebraRelacional[j+1].startswith('π'):
+                        j += 1
+                    g.add_edge(algebraRelacional[i], algebraRelacional[j+1])
+
+            if algebraRelacional[i] in listaWhere:
+                if algebraRelacional[i+1] not in tabelas:
+                    g.add_edge(algebraRelacional[i], algebraRelacional[i+1])
+                else:
+                    j = i
+                    while algebraRelacional[j+1] not in listaJoins and not algebraRelacional[j+1].startswith('π'):
+                        j += 1
+                    g.add_edge(algebraRelacional[i], algebraRelacional[j+1])
+
+            if algebraRelacional[i] in listaJoins:
+                j = i
+                while algebraRelacional[j+1] not in listaJoins and not algebraRelacional[j+1].startswith('π'):
+                    j+=1
+                g.add_edge(algebraRelacional[i], algebraRelacional[j+1])
+        
+        nx.draw_spring(g, with_labels = True)
+        plt.show()
         return
