@@ -737,6 +737,70 @@ class Utils:
                 superArray[1] = aux
 
             return superArray
+    
+
+    @staticmethod
+    def otimizaPosicao(algebra_relacional, quantidade):
+        
+        selecoes = []
+        juncoes = []
+        projecao = None
+
+        for item in algebra_relacional:
+            if isinstance(item, str):
+                if item.startswith('σ'):
+                    selecoes.append(item)
+                elif item.startswith('π'):
+                    projecao = item
+                else:
+                    juncoes.append(item)
+
+        selecoes.sort(key=lambda x: quantidade.get(x.split('.')[0], float('inf')))
+
+        juncoes.sort(key=lambda x: quantidade.get(x.split('.')[0], float('inf')))
+
+        otimizacao = selecoes + juncoes
+        if projecao:
+            otimizacao.append(projecao)
+
+        return otimizacao
+
+    #teste
+    @staticmethod
+    def otimiza_arvore_melhorada_4(algebra_relacional, tabelas):
+       
+        selecoes = []
+        juncoes = []
+        projecao = None
+
+        for item in algebra_relacional:
+            if isinstance(item, str):
+                if item.startswith('σ'):
+                    selecoes.append(item)
+                elif item.startswith('π'):
+                    projecao = item
+                else:
+                    juncoes.append(item)
+
+        tabelas = list(set(tabelas))
+
+        projecoes_antecipadas = []
+        for juncao in juncoes:
+            tabelas_juncao = [x.strip() for x in juncao.split('=')]
+            for tabela in tabelas_juncao:
+                for tab in tabelas:
+                    if tabela.startswith(tab):
+                        projecoes_antecipadas.append(f'π({tabela})')
+
+        projecoes_antecipadas = list(set(projecoes_antecipadas))
+
+        selecoes.sort(key=lambda x: tabelas.index(x.split('.')[0]) if x.split('.')[0] in tabelas else float('inf'))
+
+        otimizacao = projecoes_antecipadas + selecoes + juncoes
+        if projecao:
+            otimizacao.append(projecao)
+
+        return otimizacao
         
     @staticmethod
     def gerarGrafoOtimizado(algebraRelacional, tabelas):
