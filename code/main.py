@@ -1,4 +1,5 @@
 from Utils import Utils
+import matplotlib.pyplot as plt
 import os
 
 tabelas_bd_vendas = {
@@ -83,7 +84,10 @@ try:
     print("Consulta realizada com sucesso!")
     print("===============================")
 
-    print("Algebra Linear:\n",utils.converteAlgebra(express))
+    algebraRelacional = utils.converteAlgebra(express)
+    print("Algebra Linear:\n",algebraRelacional)
+    
+    print(utils.geraArvore(algebraRelacional))
     
 except ValueError as erro:
     print("\n\n")

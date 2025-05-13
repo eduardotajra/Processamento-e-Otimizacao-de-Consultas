@@ -1,3 +1,5 @@
+import networkx as nx
+import matplotlib.pyplot as plt
 from datetime import datetime
 
 class Utils:
@@ -592,6 +594,89 @@ class Utils:
             return True
         except ValueError:
             return False
+        
+    
+    def geraArvore(self, algebra_relacional: str) -> nx.DiGraph:
+        """
+        Gera um grafo de operadores sem otimização a partir da álgebra relacional
+        e mostra-o visualmente usando NetworkX e Matplotlib.
+        Cada produto cartesiano (X) é nomeado sequencialmente (X1, X2, ...).
+        """
+        G = nx.DiGraph()
+        x_counter = {'n': 0}
+
+        def build(expr: str):
+            expr = expr.strip()
+            while expr.startswith('(') and expr.endswith(')'):
+                expr = expr[1:-1].strip()
+
+            # Projeção
+            if expr.startswith('π'):
+                idx = expr.find(')')
+                label = expr[:idx+1]
+                G.add_node(label)
+                rest = expr[idx+1:].strip()
+                child = build(rest)
+                if child != label:
+                    G.add_edge(label, child)
+                return label
+
+            # Seleção
+            if expr.startswith('σ'):
+                idx = expr.find(')')
+                label = expr[:idx+1]
+                G.add_node(label)
+                rest = expr[idx+1:].strip()
+                child = build(rest)
+                if child != label:
+                    G.add_edge(label, child)
+                return label
+
+            # Produto cartesiano: detecta ' X ' em nível zero e nomeia X1, X2...
+            sep = ' X '
+            depth = 0
+            split_idx = -1
+            for i, ch in enumerate(expr):
+                if ch == '(':
+                    depth += 1
+                elif ch == ')':
+                    depth -= 1
+                elif depth == 0 and expr.startswith(sep, i):
+                    split_idx = i
+                    break
+            if split_idx != -1:
+                x_counter['n'] += 1
+                label = f"X{x_counter['n']}"
+                G.add_node(label)
+                left_part = expr[:split_idx]
+                right_part = expr[split_idx + len(sep):]
+                left_node = build(left_part)
+                right_node = build(right_part)
+                if left_node != label:
+                    G.add_edge(label, left_node)
+                if right_node != label:
+                    G.add_edge(label, right_node)
+                return label
+
+            # Nó folha: tabela (sem parênteses)
+            table_name = expr.strip()
+            G.add_node(table_name)
+            return table_name
+
+        # Construção do grafo e visualização
+        build(algebra_relacional)
+        try:
+            pos = nx.nx_agraph.graphviz_layout(G, prog='dot')
+        except Exception:
+            pos = nx.spring_layout(G)
+        plt.figure(figsize=(8, 6))
+        nx.draw(G, pos, with_labels=True, arrows=True, node_size=2000, font_size=10)
+        plt.title("Árvore de Operadores")
+        plt.axis('off')
+        plt.show()
+
+        return G
+
     
     
 
